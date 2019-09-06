@@ -1,0 +1,11 @@
+{
+  "name": "twilio-webform-flex",
+  "version": "1.0.0",
+  "description": "A webapp to manage email blasts and link users to a flex instance",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alex Brunner",
+  "license": "ISC"
+}
