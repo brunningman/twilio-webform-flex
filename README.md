@@ -8,7 +8,6 @@
 
 ### Stretch
 
-- Broadcast an sms everytime one of our API competitors goes down
 - Posting to slack would be awesome
 
 
