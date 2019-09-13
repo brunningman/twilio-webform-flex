@@ -31,25 +31,31 @@ const addSubIfNotExists = (phone, callback) => {
   });
 };
 
-const toggleSub = (phone, callback) => {
-  Subscriber.findOne({ phone: phone }, (err, sub) => {
+const toggleSub = (subscriber, callback) => {
+  subscriber.subscribed = !subscriber.subscribed;
+  subscriber.save((err, updatedSub) => {
+      if (err) {
+        callback(err, null);
+      } else {
+        callback(null, updatedSub);
+      }
+  });
+}
+
+const getAllSubscribers = callback => {
+  Subscriber.find({
+    subscribed: true
+  }, (err, cursor) => {
     if(err) {
       callback(err, null);
     } else {
-      sub.subscribed = ! sub.subscribed;
-      sub.save((err, updatedSub) => {
-        if (err) {
-          callback(err, null);
-        } else {
-          callback(null, updatedSub);
-        }
-      });
+      cursor.toArray(callback);
     }
   });
-
 }
 
 module.exports = {
   addSubIfNotExists: addSubIfNotExists,
-  toggleSub: toggleSub
+  toggleSub: toggleSub,
+  getAllSubscribers: getAllSubscribers
 }
