@@ -5,7 +5,8 @@ class Form extends React.Component {
     super(props);
 
     this.state = {
-      message: ''
+      message: '',
+      imgURL: ''
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -32,9 +33,12 @@ class Form extends React.Component {
     return <div id="blast-form">
       <form onSubmit={this.handleSubmit} >
         <label>Message:
-          <input type="text" name="message" value={this.state.message} onChange={this.handleChange} required/>
+          <textarea name="message" value={this.state.message} onChange={this.handleChange} required/>
         </label>
-        <input type="submit" value="Submit" />
+        <label>Image URL (Optional):
+          <input type="text" name="imgURL" value={this.state.imgURL} onChange={this.handleChange} />
+        </label>
+        <input type="submit" value="Send SMS to All Subscribers" />
       </form>
     </div>
   };
