@@ -18,7 +18,7 @@ class Form extends React.Component {
   }
 
   handleSubmit(event) {
-    fetch('127.0.0.1/3000/blast', {
+    fetch('/messages/send', {
       method: 'POST',
       mode: 'cors',
       headers: {

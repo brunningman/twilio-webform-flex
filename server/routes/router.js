@@ -2,11 +2,16 @@ const Express = require('express');
 const router = Express.Router();
 const db = require('../../database/index');
 const sendSMStoAllSubs = require('../actions/sendSMStoAllSubs');
+const sendSMS = require('../actions/sendSMS');
 
-const respond = message => {
-  res.type('text/xml');
-  res.render('twiml', {
-    message: message
+const respond = (message, subPhone) => {
+  // res.type('text/xml');
+  // res.render('twiml', {
+  //   message: message
+  // });
+  sendSMS({
+    to: subPhone,
+    body: message
   });
 }
 
@@ -14,7 +19,7 @@ router.post('/messages/send', (req, res) => {
   const message = req.body.message;
   const imgURL = req.body.imgURL;
 
-  db.getAllSubscribed((err, subs) => {
+  db.getAllSubscribers((err, subs) => {
     if(err) {
       throw new Error(err);
     } else {
@@ -32,11 +37,12 @@ router.post('/messages/send', (req, res) => {
 });
 
 router.post('/messages', (req, res) => {
+  console.log(req.body);
   const phone = req.body.From;
-
 
   const processMessage = (subscriber) => {
     let msg = req.body.Body || '';
+    let response = '';
     msg = msg.toLowerCase().trim();
 
     if (msg === 'subscribe' || 'unsubscribe') {
@@ -45,23 +51,26 @@ router.post('/messages', (req, res) => {
           throw new Error(err);
         } else {
           if(data.subscribed === true) {
-            const response = 'You are now subscribed for updates';
+            response = 'You are now subscribed for updates';
+            console.log(data);
+            respond(response, phone);
           } else {
-            const response = 'You have unsubscribed. Text "subscribe" to start recieving updates again';
+            response = 'You have unsubscribed. Text "subscribe" to start recieving updates again';
+            respond(response, phone);
           }
         }
       });
     } else {
-      const response = 'Sorry, we didn\'t understand that. Available commands are: subscribe or unsubscribe';
+      response = 'Sorry, we didn\'t understand that. Available commands are: subscribe or unsubscribe';
+      respond(response, phone);
     }
-    respond(response);
   }
 
   db.addSubIfNotExists(phone, (err, sub, newSub) => {
     if(err) {
-      respond('We couldn\'t sign you up, try again later');
+      respond('We couldn\'t sign you up, try again later', phone);
     } else if(newSub) {
-      respond('Thanks for contacting us! Text "subscribe" to receive updates via text message.');
+      respond('Thanks for contacting us! Text "subscribe" to receive updates via text message.', req.body.From);
     } else {
       processMessage(sub);
     }

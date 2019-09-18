@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/twilio-flex', {useNewUrlParser: true});
 
-const Subscriber = require('./models/subscriber');
+const Subscriber = mongoose.model('Subscriber', require('./models/subscriber'));
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -10,13 +10,14 @@ db.once('open', function() {
 });
 
 const addSubIfNotExists = (phone, callback) => {
+  console.log(Subscriber)
   Subscriber.findOne({ phone: phone }, (err, sub) => {
     if(err) {
       callback(err, null);
     } else {
       if(!sub) {
         const newSubscriber = new Subscriber({ phone: phone });
-
+        console.log(newSubscriber);
         newSubscriber.save((err, newSub) => {
           if(err || !newSub) {
             callback(err ? err : 'We couldn\'t sign you up, try again later.', null);
@@ -45,11 +46,11 @@ const toggleSub = (subscriber, callback) => {
 const getAllSubscribers = callback => {
   Subscriber.find({
     subscribed: true
-  }, (err, cursor) => {
+  }, (err, data) => {
     if(err) {
       callback(err, null);
     } else {
-      cursor.toArray(callback);
+      callback(null, data);
     }
   });
 }

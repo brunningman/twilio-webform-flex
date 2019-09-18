@@ -2,6 +2,8 @@ require('dotenv').config();
 const client = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
 
 const sendSMS = (messageObj) => {
+  console.log(messageObj);
+  if(!messageObj.from) messageObj.from = process.env.TWILIO_PHONE;
   client.messages
     .create(messageObj)
     .then(message => {

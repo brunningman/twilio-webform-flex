@@ -2,7 +2,7 @@ require('dotenv').config();
 const sendSMS =  require('./sendSMS');
 
 const sendSMStoAllSubs = (body, url, subs, callback) => {
-  subs.forEaca(sub => {
+  subs.forEach(sub => {
     const message = {
       body: body,
       to: sub.phone,
