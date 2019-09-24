@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/twilio-flex', {useNewUrlParser: true});
+const mongooseOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}
+
+mongoose.connect('mongodb://localhost/twilio-flex', mongooseOptions);
 
 const Subscriber = mongoose.model('Subscriber', require('./models/subscriber'));
 
