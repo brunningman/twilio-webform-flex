@@ -8,8 +8,8 @@ const morgan = require('morgan');
 const app = express();
 
 // initialize middleware
-app.use('/messages', bodyParser.urlencoded({extended: false}));
-app.use('/messages/send', bodyParser.json());
+// app.use('/messages', bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(morgan('tiny'));
