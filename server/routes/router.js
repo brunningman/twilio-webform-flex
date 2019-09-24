@@ -37,6 +37,7 @@ router.post('/messages/send', (req, res) => {
 });
 
 router.post('/messages', (req, res) => {
+  // req.body = JSON.parse(req.body);
   console.log(req.body);
   const phone = req.body.From;
 
@@ -44,6 +45,7 @@ router.post('/messages', (req, res) => {
     let msg = req.body.Body || '';
     let response = '';
     msg = msg.toLowerCase().trim();
+    let code = 200;
 
     if (msg === 'subscribe' || 'unsubscribe') {
       db.toggleSub(subscriber, (err, data) => {
@@ -53,24 +55,29 @@ router.post('/messages', (req, res) => {
           if(data.subscribed === true) {
             response = 'You are now subscribed for updates';
             console.log(data);
-            respond(response, phone);
+            // respond(response, phone);
           } else {
             response = 'You have unsubscribed. Text "subscribe" to start recieving updates again';
-            respond(response, phone);
           }
         }
       });
     } else {
-      response = 'Sorry, we didn\'t understand that. Available commands are: subscribe or unsubscribe';
-      respond(response, phone);
+      response = 'A representative will contact you shortly';
+      code = 201
     }
+    res.writeHead(code);
+    res.json({phone: phone, response: response});
   }
 
   db.addSubIfNotExists(phone, (err, sub, newSub) => {
     if(err) {
-      respond('We couldn\'t sign you up, try again later', phone);
+      let response = 'We couldn\'t sign you up, try again later';
+      res.writeHead(200);
+      res.json({phone: phone, response: response});
     } else if(newSub) {
-      respond('Thanks for contacting us! Text "subscribe" to receive updates via text message.', req.body.From);
+      response = 'Thanks for contacting us! Text "subscribe" to receive updates via text message.';
+      res.writeHead(200);
+      res.json({phone: phone, response: response});
     } else {
       processMessage(sub);
     }
