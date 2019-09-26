@@ -38,26 +38,21 @@ router.post('/messages/send', (req, res) => {
 });
 
 router.post('/messages', (req, res) => {
-  // req.body = JSON.parse(req.body);
-  console.log(req.body);
   const phone = req.body.From;
 
   const processMessage = Promise.method(subscriber => {
     let msg = req.body.Body || '';
     let response = '';
     msg = msg.toLowerCase().trim();
-    console.log('message', msg);
     let code = 200;
 
     if (msg === 'subscribe' || msg === 'unsubscribe') {
-      console.log('toggling')
       db.toggleSub(subscriber)
         .then(data => {
           if(data.subscribed === true) {
-            console.log(data);
-            // respond(response, phone);
+            code = 210;
           } else {
-            response = 'You have unsubscribed. Text "subscribe" to start recieving updates again';
+            code = 211;
           }
           return response;
         })
@@ -65,7 +60,6 @@ router.post('/messages', (req, res) => {
           throw new Error(err);
         });
     } else {
-      response = 'Thank you for messaging us, a representative will contact you shortly';
       code = 201
     }
     return {
@@ -82,7 +76,7 @@ router.post('/messages', (req, res) => {
           .then(sub => sub)
           .catch(err => {
             throw new Error(err);
-          })
+          });
       }
       return sub;
     })
