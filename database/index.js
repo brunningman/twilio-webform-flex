@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const Promise = require('bluebird');
+mongoose.Promise = Promise;
 const mongooseOptions = {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -14,54 +16,46 @@ db.once('open', function() {
   console.log('Mongoose connection successful');
 });
 
-const addSubIfNotExists = (phone, callback) => {
-  console.log(Subscriber)
-  Subscriber.findOne({ phone: phone }, (err, sub) => {
-    if(err) {
-      callback(err, null);
-    } else {
-      if(!sub) {
-        const newSubscriber = new Subscriber({ phone: phone });
-        console.log(newSubscriber);
-        newSubscriber.save((err, newSub) => {
-          if(err || !newSub) {
-            callback(err ? err : 'We couldn\'t sign you up, try again later.', null);
-          } else {
-            callback(null, newSub, 'new');
-          }
-        });
-      } else {
-        callback(null, sub, null);
-      }
-    }
-  });
+const addSub = phone => {
+  const newSubscriber = new Subscriber({ phone: phone });
+  console.log(newSubscriber);
+  return newSubscriber.save()
+    .catch(err => {
+      throw new Error(err);
+    });
 };
 
-const toggleSub = (subscriber, callback) => {
-  subscriber.subscribed = !subscriber.subscribed;
-  subscriber.save((err, updatedSub) => {
-      if (err) {
-        callback(err, null);
-      } else {
-        callback(null, updatedSub);
-      }
-  });
+const findIfSubExists = phone => {
+  return Subscriber.findOne({ phone: phone })
+    .catch(err => {
+      throw new Error(err);
+    })
 }
 
-const getAllSubscribers = callback => {
-  Subscriber.find({
-    subscribed: true
-  }, (err, data) => {
-    if(err) {
-      callback(err, null);
-    } else {
-      callback(null, data);
-    }
-  });
+const toggleSub = subscriber => {
+  subscriber.subscribed = !subscriber.subscribed;
+  return subscriber.save()
+    .then(updatedSub => {
+      return updatedSub;
+    })
+    .catch(err => {
+      throw new Error(err);
+    });
+}
+
+const getAllSubscribers = () => {
+  return Subscriber.find({subscribed: true})
+    .then(data => {
+      return data;
+    })
+    .catch(err => {
+      throw new Error(err);
+    });
 }
 
 module.exports = {
-  addSubIfNotExists: addSubIfNotExists,
+  addSub: addSub,
   toggleSub: toggleSub,
-  getAllSubscribers: getAllSubscribers
+  getAllSubscribers: getAllSubscribers,
+  findIfSubExists: findIfSubExists
 }
