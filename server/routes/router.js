@@ -1,9 +1,10 @@
 const Express = require('express');
 const router = Express.Router();
 const db = require('../../database/index');
+const Promise = require('bluebird');
 const sendSMStoAllSubs = require('../actions/sendSMStoAllSubs');
 const sendSMS = require('../actions/sendSMS');
-const Promise = require('bluebird');
+const sendToFlex = require('../actions/sendToFlex');
 
 const respond = (message, subPhone) => {
   // res.type('text/xml');
@@ -44,34 +45,45 @@ router.post('/messages', (req, res) => {
     let msg = req.body.Body || '';
     let response = '';
     msg = msg.toLowerCase().trim();
+    console.log('default');
     let code = 200;
 
-    if (msg === 'subscribe' || msg === 'unsubscribe') {
-      db.toggleSub(subscriber)
+    if (msg !== 'subscribe' && msg !== 'unsubscribe') {
+      return {
+        code: code,
+        phone: phone,
+        response: response === '' ? req.body.Body : response
+      };
+    } else {
+      return db.toggleSub(subscriber, msg)
         .then(data => {
+          let response = {
+            code: code,
+            phone: phone
+          };
           if(data.subscribed === true) {
+            console.log('newly subscribed');
+            respond('Thank you for subscribing! You\'ll recieve future updates here.', response.phone);
             code = 210;
           } else {
+            console.log('newly unsubscribed');
             code = 211;
+            respond('You have unsubscribed. Text SUBSCRIBE to restart recieving updates.', response.phone);
           }
-          return response;
+          return {code: 400}
         })
         .catch(err => {
           throw new Error(err);
         });
-    } else {
-      code = 201
     }
-    return {
-      code: code,
-      phone: phone,
-      response: response
-    };
   });
 
   db.findIfSubExists(phone)
     .then(sub => {
+      console.log(sub);
       if(!sub) {
+        console.log('sub not found');
+        code = 201;
         return db.addSub(phone)
           .then(sub => sub)
           .catch(err => {
@@ -84,7 +96,22 @@ router.post('/messages', (req, res) => {
       return processMessage(sub);
     })
     .then(response => {
-      res.json({ code: response.code, phone: response.phone, resoponse: response.response });
+      switch(response.code) {
+        case 201:
+          respond('Thank you for contacting us! Text SUBSCRIBE to begin recieving updates.', response.phone);
+          break;
+        case 210:
+          respond('Thank you for subscribing! You\'ll recieve future updates here.', response.phone);
+          break;
+        case 211:
+          respond('You have unsubscribed. Text SUBSCRIBE to restart recieving updates.', response.phone);
+          break;
+        case 200:
+          // console.log('sending to flex');
+          // sendToFlex(response);
+          res.end(400);
+          break;
+        }
     })
     .catch(err => {
       console.log(err);
