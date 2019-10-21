@@ -32,8 +32,8 @@ const findIfSubExists = phone => {
     })
 }
 
-const toggleSub = subscriber => {
-  subscriber.subscribed = !subscriber.subscribed;
+const toggleSub = (subscriber, message) => {
+  subscriber.subscribed = message === 'subscribe';
   return subscriber.save()
     .then(updatedSub => {
       return updatedSub;
